@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Platform | Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111;
+            --elevated: #1a1a1a;
+            --text: #fff;
+            --muted: #666;
+            --red: #ef4444;
+            --green: #22c55e;
+            --yellow: #eab308;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--elevated);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .logo span { color: var(--red); }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        button {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        button:hover { opacity: 0.9; }
+        
+        button.secondary {
+            background: var(--elevated);
+            color: var(--text);
+            border: 1px solid var(--muted);
+        }
+        
+        .services-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .service-card {
+            background: var(--surface);
+            border: 1px solid var(--elevated);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: border-color 0.2s;
+        }
+        
+        .service-card:hover {
+            border-color: var(--red);
+        }
+        
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        
+        .service-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .service-repo {
+            font-size: 0.85rem;
+            color: var(--muted);
+            font-family: monospace;
+        }
+        
+        .environments {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .env-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .env-badge.dev { background: rgba(34, 197, 94, 0.1); color: var(--green); }
+        .env-badge.staging { background: rgba(234, 179, 8, 0.1); color: var(--yellow); }
+        .env-badge.prod { background: var(--red); color: white; }
+        .env-badge.pending { background: var(--elevated); color: var(--muted); }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            color: var(--muted);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal-content {
+            background: var(--surface);
+            border: 1px solid var(--elevated);
+            border-radius: 12px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .modal h2 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--elevated);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--elevated);
+            border-top-color: var(--red);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">platform<span>.ctl</span></div>
+        <div class="status">
+            <span class="status-dot"></span>
+            System Operational
+        </div>
+    </header>
+    
+    <main>
+        <div class="actions">
+            <button onclick="openModal()">+ Register Service</button>
+            <button class="secondary" onclick="loadServices()">↻ Refresh</button>
+        </div>
+        
+        <div id="services" class="services-grid">
+            <div class="empty-state">
+                <p>Loading services...</p>
+            </div>
+        </div>
+    </main>
+    
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2>Register New Service</h2>
+            <form id="serviceForm">
+                <div class="form-group">
+                    <label>Service Name</label>
+                    <input type="text" id="name" placeholder="payment-api" required>
+                </div>
+                <div class="form-group">
+                    <label>Git Repository URL</label>
+                    <input type="url" id="repo" placeholder="https://github.com/org/repo" required>
+                </div>
+                <div class="form-group">
+                    <label>Owner Team</label>
+                    <input type="text" id="owner" placeholder="platform-team" required>
+                </div>
+                <div class="form-group">
+                    <label>Environments</label>
+                    <select id="envs" multiple>
+                        <option value="dev" selected>Development</option>
+                        <option value="staging" selected>Staging</option>
+                        <option value="prod">Production</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit">Register</button>
+                    <button type="button" class="secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = '/api';
+        
+        async function loadServices() {
+            const container = document.getElementById('services');
+            container.innerHTML = '<div class="empty-state"><div class="loading"></div></div>';
+            
+            try {
+                const res = await fetch(`${API_URL}/v1/services`);
+                const data = await res.json();
+                
+                if (data.services.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <p>No services registered yet.</p>
+                            <p style="margin-top: 0.5rem;">Click "Register Service" to get started.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = data.services.map(s => `
+                    <div class="service-card">
+                        <div class="service-header">
+                            <div>
+                                <div class="service-name">${s.name}</div>
+                                <div class="service-repo">${s.repo}</div>
+                            </div>
+                            <span style="color: var(--muted); font-size: 0.85rem;">${s.owner}</span>
+                        </div>
+                        <div class="environments">
+                            ${s.environments.map(e => `
+                                <span class="env-badge ${e.name} ${e.status === 'pending' ? 'pending' : ''}">
+                                    ${e.name} ${e.status === 'deployed' ? '✓' : ''}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                container.innerHTML = `
+                    <div class="empty-state" style="color: var(--red);">
+                        <p>Error loading services: ${err.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function openModal() {
+            document.getElementById('modal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+        
+        document.getElementById('serviceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const body = {
+                name: document.getElementById('name').value,
+                repo: document.getElementById('repo').value,
+                owner: document.getElementById('owner').value,
+                environments: Array.from(document.getElementById('envs').selectedOptions).map(o => o.value)
+            };
+            
+            try {
+                const res = await fetch(`${API_URL}/v1/services`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                
+                if (res.ok) {
+                    closeModal();
+                    loadServices();
+                    e.target.reset();
+                } else {
+                    const err = await res.json();
+                    alert('Error: ' + err.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        });
+        
+        loadServices();
+        setInterval(loadServices, 30000);
+    </script>
+</body>
+  </html>
+              
